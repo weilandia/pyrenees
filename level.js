@@ -13,7 +13,7 @@ function initializeLevel() {
       fill: [22, 27, 34]
     },
     ground: {
-      y: height - 190,
+      y: height - height / 4.0,
       fill: [194, 178, 128],
       darkFill: [146, 125, 85],
       bounds: []
@@ -172,7 +172,7 @@ function buildMountains() {
 
     for (var m = 1; m <= mountainCount; m += 1) {
       var x = random(bound[0], bound[1] - 250);
-      var y = random(250, 500);
+      var y = random(height / 3.0, height / 1.25);
       var width = random(200, 450);
 
       var mountain = {
