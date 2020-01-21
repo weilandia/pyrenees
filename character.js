@@ -1,6 +1,7 @@
-var charConfig = {
+var character = {
   score: 0,
-  scale: 0.55,
+  lives: 3,
+  scale: 0.7,
   colors: {
     tone: [228, 190, 120],
     tunic: 48,
@@ -10,14 +11,14 @@ var charConfig = {
 };
 
 function chScale(n) {
-  return charConfig.scale * n;
+  return character.scale * n;
 }
 
-function character(actions) {
+function drawCharacter(actions) {
   var profile = actions["isLeft"] || actions["isRight"];
   var xDir = actions["isLeft"] ? -1 : 1;
 
-  fill(charConfig["colors"]["boots"]);
+  fill(character["colors"]["boots"]);
   if (actions["isJumping"] || actions["isFalling"]) {
     ellipse(gameCharX - chScale(6), gameCharY - chScale(3), chScale(10), chScale(7));
     ellipse(gameCharX + chScale(6), gameCharY - chScale(3), chScale(10), chScale(7));
@@ -26,7 +27,7 @@ function character(actions) {
     ellipse(gameCharX + chScale(6), gameCharY, chScale(10), chScale(7));
   }
 
-  fill(charConfig["colors"]["tunic"]);
+  fill(character["colors"]["tunic"]);
   if (profile) {
     rect(gameCharX - chScale(4), gameCharY - chScale(16), chScale(8), chScale(15));
     rect(gameCharX - chScale(4), gameCharY - chScale(20), chScale(8), chScale(15));
@@ -37,7 +38,7 @@ function character(actions) {
     rect(gameCharX - chScale(10), gameCharY - chScale(18), chScale(20), chScale(15));
   }
 
-  fill(charConfig["colors"]["tone"]);
+  fill(character["colors"]["tone"]);
   if (profile) {
     if (actions["isJumping"] || actions["isFalling"]) {
       ellipse(gameCharX + chScale(5) * xDir, gameCharY - chScale(15), chScale(7));
@@ -69,10 +70,10 @@ function character(actions) {
   }
 
   // hat
-  fill(charConfig["colors"]["hat"]);
+  fill(character["colors"]["hat"]);
   rect(gameCharX - chScale(3.5), gameCharY - chScale(40), chScale(7), chScale(5));
 
-  fill(charConfig["colors"]["tunic"]);
+  fill(character["colors"]["tunic"]);
   rect(gameCharX - chScale(7), gameCharY - chScale(38), chScale(14), chScale(5));
 
   // eyes

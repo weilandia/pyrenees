@@ -1,16 +1,14 @@
-/*
-
-Night Desert
-
-*/
-
 var lvl, mountains, ground, moon, stars, sword;
 
-function initializeSetting() {
+function initializeLevel() {
   lvl = {
     score: 0,
     startX: -5,
     endX: 7000,
+    flagpole: {
+      x: 6950,
+      isReached: false
+    },
     sky: {
       fill: [22, 27, 34]
     },
@@ -46,7 +44,7 @@ function initializeSetting() {
       bladeFill: 170,
       height: 12.5,
       isFound: false,
-      value: 100
+      value: 1
     },
     canyons: [],
     coins: []
@@ -61,7 +59,7 @@ function initializeSetting() {
   buildCoins();
 }
 
-function drawSetting() {
+function drawLevel() {
   background(lvl.sky.fill);
 
   drawStars();
@@ -72,6 +70,7 @@ function drawSetting() {
   drawClouds();
   drawSword(lvl.sword.x, lvl.sword.y);
   drawCoins();
+  drawFlagpole();
 }
 
 function buildGround() {
@@ -108,10 +107,29 @@ function buildCoins() {
         x: coinX,
         y: coinY,
         isFound: false,
-        value: round(random(1, 3))
+        value: 1,
+        size: round(random(1, 3))
       });
     }
   }
+}
+
+function drawFlagpole() {
+  stroke(100);
+  strokeWeight(4);
+  line(lvl.flagpole.x, lvl.ground.y, lvl.flagpole.x, lvl.ground.y - 150);
+  strokeWeight(0);
+
+  var y = lvl.ground.y;
+
+  fill(255, 204, 150);
+
+  if (lvl.flagpole.isReached) {
+    fill(105, 204, 150);
+    y -= 130;
+  }
+
+  triangle(lvl.flagpole.x, y, lvl.flagpole.x, y - 20, lvl.flagpole.x + 20, y - 10);
 }
 
 function drawCoins() {
@@ -119,7 +137,7 @@ function drawCoins() {
     var coin = lvl.coins[c];
     if (coin.isFound) continue;
     stroke(255, 215, 0);
-    strokeWeight(random(coin.value * 4, coin.value * 8));
+    strokeWeight(random(coin.size * 4, coin.size * 8));
     point(coin.x, coin.y);
   }
 
@@ -143,8 +161,6 @@ function drawSword(x, y) {
   rect(x + 1, y - 6, 2, 5);
   fill(lvl.sword.jewelFill);
   quad(x + 2, y - 4, x + 3.5, y - 6, x + 2, y - 8, x + 0.5, y - 6);
-
-  scale(1);
 }
 
 function buildMountains() {
@@ -174,7 +190,7 @@ function buildMountains() {
 function drawMountains() {
   for (var m = 0; m < lvl.mountains.objects.length; m++) {
     var mountain = lvl.mountains.objects[m];
-    
+
     noStroke();
     fill(mountain.fill);
     triangle(
@@ -192,10 +208,10 @@ function drawGround() {
   noStroke();
 
   var y = lvl.ground.y;
-  
+
   for (var b = 0; b < lvl.ground.bounds.length; b++) {
     var bounds = lvl.ground.bounds[b];
-    
+
     var startX = bounds[0];
     var endX = bounds[1];
 
@@ -226,10 +242,10 @@ function buildStars() {
 
 function drawStars() {
   stroke(lvl.stars.fill);
-  
+
   for (var s = 0; s < lvl.stars.objects.length; s++) {
     var star = lvl.stars.objects[s];
-    
+
     strokeWeight(star.strokeWeight);
     point(star.x, star.y);
   }

@@ -1,3 +1,5 @@
+// game can be played at https://weilandia.github.io/pyrenees/
+
 var gameCharX;
 var gameCharY;
 var isLeft;
@@ -6,8 +8,9 @@ var isFalling;
 var isPlummeting;
 var scrollPos;
 
-function reset() {
-  initializeSetting();
+function startGame() {
+  // ./level.js
+  initializeLevel();
 
   gameCharX = 10;
   gameCharY = lvl.ground.y;
@@ -20,15 +23,16 @@ function reset() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  reset();
+  startGame();
 }
 
 function draw() {
   push();
   translate(scrollPos, 1);
-  drawSetting();
+  drawLevel();
 
-  character({
+  // ./character.js
+  drawCharacter({
     isLeft: isLeft,
     isRight: isRight,
     isFalling: isFalling,
@@ -36,6 +40,18 @@ function draw() {
   });
 
   pop();
+
+  if (character.lives < 1) {
+    gameOver();
+    return;
+  }
+
+  if (lvl.flagpole.isReached) {
+    levelComplete();
+    return;
+  } else {
+    checkFlagpole();
+  }
 
   if (isLeft) {
     gameCharX = constrain(gameCharX - 4, 5, lvl.endX - 10);
@@ -47,7 +63,7 @@ function draw() {
 
   if (isRight && gameCharX < lvl.endX - 10) {
     gameCharX = constrain(gameCharX + 4, 0, lvl.endX - 10);
-  
+
     if (gameCharX > width * 0.8 && scrollPos > -(lvl.endX - width)) {
       scrollPos -= 4;
     }
@@ -64,7 +80,7 @@ function draw() {
     lvl.sword.isFound = true;
     lvl.score += lvl.sword.value;
   }
-  
+
   for (var c = 0; c < lvl.coins.length; c++) {
     var coin = lvl.coins[c];
 
@@ -73,7 +89,7 @@ function draw() {
       lvl.score += coin.value;
     }
   }
-  
+
   for (var c = 0; c < lvl.canyons.length; c ++) {
     var canyon = lvl.canyons[c];
 
@@ -89,29 +105,66 @@ function draw() {
   if (isPlummeting) {
     gameCharY += 5;
   }
-  
-  if (gameCharY >= height) {
-    fill(255);
-    textSize(100);
-    text('Game Over', 5, 100);
-    textSize(20);
-    text('Press any key to start over.', 10, 130);
-  }
-  
-  if (gameCharX >= lvl.endX - 20) {
-    fill(255);
-    textSize(100);
-    text('Finished!', 5, 100);
-    textSize(20);
-    text('Press any key to start over.', 10, 130);
-  }
-  
+
+  checkPlayerDie();
+
   fill(255);
   textSize(30);
   text(lvl.score, width - 100, 50);
+
+  for (var l = 0; l < character.lives; l++) {
+    stroke([0, 255, 0, 50]);
+
+    if (character.lives < 2) {
+      stroke([255, 0, 0, 50]);
+    }
+
+    strokeWeight(30);
+    point(25 + l * 40, 40);
+    noStroke();
+  }
+}
+
+function resetGame() {
+  character.lives = 3;
+  startGame();
+}
+
+function levelComplete() {
+  fill(255);
+  textSize(100);
+  text('Level complete!', 5, 100);
+  textSize(20);
+  text('Press space to continue.', 10, 130);
+}
+
+function gameOver() {
+  fill(255);
+  textSize(100);
+  text('Game Over', 5, 100);
+  textSize(20);
+  text('Press space to continue.', 10, 130);
+}
+
+function checkPlayerDie() {
+  if (gameCharY >= height && character.lives > 0) {
+    character.lives -= 1;
+    startGame();
+  }
+}
+
+function checkFlagpole() {
+  if (dist(gameCharX, gameCharX, lvl.flagpole.x, gameCharX) < 5 && lvl.flagpole.isReached === false) {
+    lvl.flagpole.isReached = true;
+  }
 }
 
 function keyPressed() {
+  if (lvl.flagpole.isReached || character.lives < 1) {
+    keyCode == 32 && resetGame();
+    return;
+  }
+
   if (keyCode == 32 && gameCharY === lvl.ground.y) {
     gameCharY -= 100;
   }
@@ -122,10 +175,6 @@ function keyPressed() {
 
   if (keyCode === RIGHT_ARROW) {
     isRight = true;
-  }
-  
-  if (gameCharY >= height || gameCharX >= lvl.endX - 20) {
-    reset();
   }
 
   return false;
