@@ -1,96 +1,124 @@
-var lvl, mountains, ground, moon, stars, sword;
+function Level(width, height) {
+  this.width = width;
+  this.height = height;
+  this.score = 0;
+  this.startX = -5;
+  this.endX = width * 12;
+  this.flagpole = {
+    x: this.endX - 50,
+    isReached: false
+  };
+  this.sky = {
+    fill: [22, 27, 34]
+  };
+  this.ground = new Ground(this);
+  this.mountains = {
+    objects: []
+  };
+  this.moon = {
+    x: width * 0.6,
+    y: 90,
+    diameter: 90,
+    fill: 210
+  };
+  this.trees = {
+    objects: []
+  };
+  this.stars = {
+    count: 50,
+    fill: [255, 255, 255, 205],
+    objects: []
+  };
+  this.clouds = {
+    objects: []
+  };
+  this.sword = {
+    handleFill: [30, 0, 140],
+    jewelFill: [127, 0, 14],
+    bladeFill: 170,
+    height: 12.5,
+    isFound: false,
+    value: 1
+  };
+  this.canyons = [];
+  this.coins = [];
 
-function initializeLevel() {
-  lvl = {
-    score: 0,
-    startX: -5,
-    endX: 7000,
-    flagpole: {
-      x: 6950,
-      isReached: false
-    },
-    sky: {
-      fill: [22, 27, 34]
-    },
-    ground: {
-      y: height - 190,
-      fill: [194, 178, 128],
-      darkFill: [146, 125, 85],
-      bounds: []
-    },
-    mountains: {
-      objects: []
-    },
-    moon: {
-      x: 720,
-      y: 90,
-      diameter: 90,
-      fill: 210
-    },
-    trees: {
-      objects: []
-    },
-    stars: {
-      count: 50,
-      fill: [255, 255, 255, 205],
-      objects: []
-    },
-    clouds: {
-      objects: []
-    },
-    sword: {
-      handleFill: [30, 0, 140],
-      jewelFill: [127, 0, 14],
-      bladeFill: 170,
-      height: 12.5,
-      isFound: false,
-      value: 1
-    },
-    canyons: [],
-    coins: []
+  this.setup = function() {
+    this.ground.setup();
+    buildTrees();
+    buildMountains();
+    buildStars();
+    buildClouds();
+    buildSword();
+    buildCoins();
   };
 
-  buildGround();
-  buildTrees();
-  buildMountains();
-  buildStars();
-  buildClouds();
-  buildSword();
-  buildCoins();
-}
+  this.draw = function() {
+    background(this.sky.fill);
 
-function drawLevel() {
-  background(lvl.sky.fill);
-
-  drawStars();
-  drawSky();
-  drawMountains();
-  drawGround();
-  drawTrees();
-  drawClouds();
-  drawSword(lvl.sword.x, lvl.sword.y);
-  drawCoins();
-  drawFlagpole();
-}
-
-function buildGround() {
-  var startX = lvl.startX;
-  var endX;
-
-  for (var i = 100; i < lvl.endX; i += 800) {
-    var canyonStart = i + round(random(0, 60));
-    var canyonEnd = canyonStart + round(random(50, 120));
-    lvl.canyons.push([canyonStart, canyonEnd]);
+    drawStars();
+    drawSky();
+    drawMountains();
+    this.ground.draw(this);
+    drawTrees();
+    drawClouds();
+    drawSword(this.sword.x, this.sword.y);
+    drawCoins();
+    drawFlagpole();
   }
+}
 
-  for (var c = 0; c < lvl.canyons.length; c++) {
-    var canyon = lvl.canyons[c];
-    lvl.ground.bounds.push([startX, canyon[0]]);
-    startX = canyon[1];
+function Ground(l) {
+  this.y = l.height * 0.7;
+  this.fill = [194, 178, 128];
+  this.darkFill = [146, 125, 85];
+  this.bounds = [];
 
-    if (c === lvl.canyons.length - 1) {
-      lvl.ground.bounds.push([canyon[1], lvl.endX]);
+  this.setup = function() {
+    var startX = l.startX;
+    var endX;
+
+    for (var i = 100; i < l.endX; i += 800) {
+      var canyonStart = i + round(random(0, 60));
+      var canyonEnd = canyonStart + round(random(50, 120));
+      l.canyons.push([canyonStart, canyonEnd]);
     }
+
+    for (var c = 0; c < l.canyons.length; c++) {
+      var canyon = l.canyons[c];
+      this.bounds.push([startX, canyon[0]]);
+      startX = canyon[1];
+
+      if (c === l.canyons.length - 1) {
+        this.bounds.push([canyon[1], l.endX]);
+      }
+    }
+  };
+
+  this.draw = function(l) {
+    noStroke();
+
+    var y = this.y;
+
+    for (var b = 0; b < this.bounds.length; b++) {
+      var bounds = this.bounds[b];
+
+      var startX = bounds[0];
+      var endX = bounds[1];
+
+      fill(this.fill);
+      rect(startX, y, endX - startX + 5, height - y);
+
+      fill(this.darkFill);
+      rect(startX + 5, y + 5, endX - startX, height - y);
+
+      fill(l.sky.fill);
+      for (var x = startX; x < endX; x += 10) {
+        quad(x, y, x + 5, y, x + 10, y + 5, x + 5, y + 5);
+      }
+    }
+
+    noStroke();
   }
 }
 

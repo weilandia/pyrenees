@@ -3,18 +3,18 @@
 // level code is loaded from ./level.js
 
 var scrollPos;
+var character;
+var lvl;
 
 function startGame() {
-  character.x = 10;
-  character.y = lvl.ground.y;
-  character.isPlummeting = false;
-
+  character.startGame(10, lvl.ground.y);
   scrollPos = 0;
 }
 
 function resetGame() {
-  character.lives = 3;
-  initializeLevel();
+  character = new Character(width, height)
+  lvl = new Level(width, height);
+  lvl.setup();
   startGame();
 }
 
@@ -27,8 +27,8 @@ function draw() {
   push();
 
   translate(scrollPos, 1);
-  drawLevel();
-  drawCharacter();
+  lvl.draw();
+  character.draw();
 
   pop();
 
@@ -82,7 +82,7 @@ function handleMovement() {
 function handleItemCollection() {
   if (dist(character.x, character.x, lvl.sword.x, character.x) < 5 && lvl.sword.isFound === false) {
     lvl.sword.isFound = true;
-    lvl.score += lvl.sword.value;
+    character.score += lvl.sword.value;
   }
 
   for (var c = 0; c < lvl.coins.length; c++) {
@@ -90,25 +90,25 @@ function handleItemCollection() {
 
     if (dist(character.x, character.y, coin.x, coin.y) < 50 && coin.isFound === false) {
       lvl.coins[c].isFound = true;
-      lvl.score += coin.value;
+      character.score += coin.value;
     }
   }
 }
 
 function handleCanyons() {
-  for (var c = 0; c < lvl.canyons.length; c ++) {
-    var canyon = lvl.canyons[c];
+  if (!character.isPlummeting) {
+    for (var c = 0; c < lvl.canyons.length; c ++) {
+      var canyon = lvl.canyons[c];
 
-    if (
-      character.x >= canyon[0] &&
-      character.x < canyon[1] &&
-      character.y === lvl.ground.y
-    ) {
-      character.isPlummeting = true;
+      if (
+        character.x >= canyon[0] &&
+        character.x < canyon[1] &&
+        character.y === lvl.ground.y
+      ) {
+        character.isPlummeting = true;
+      }
     }
-  }
-
-  if (character.isPlummeting) {
+  } else {
     character.y += 5;
   }
 }
@@ -116,7 +116,7 @@ function handleCanyons() {
 function drawScoreIndicator() {
   fill(255);
   textSize(30);
-  text(lvl.score, width - 100, 50);
+  text(character.score, width - 100, 50);
 }
 
 function drawLifeIndicator() {
@@ -168,29 +168,13 @@ function keyPressed() {
     return;
   }
 
-  if (keyCode == 32 && character.y === lvl.ground.y) {
-    character.y -= 100;
-  }
-
-  if (keyCode === LEFT_ARROW) {
-    character.isLeft = true;
-  }
-
-  if (keyCode === RIGHT_ARROW) {
-    character.isRight = true;
-  }
+  character.keyPressed(keyCode);
 
   return false;
 }
 
 function keyReleased() {
-  if (keyCode === LEFT_ARROW) {
-    character.isLeft = false;
-  }
-
-  if (keyCode === RIGHT_ARROW) {
-    character.isRight = false;
-  }
+  character.keyReleased(keyCode);
 }
 
 function windowResized() {
